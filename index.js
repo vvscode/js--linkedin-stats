@@ -1,14 +1,16 @@
 const saveData = require('./utils/safe-to-google-spreadsheet');
-
+const getStats = require('./utils/linkedin-get-stats');
 
 (async () => {
   try {
-    saveData(
+    const stats = await getStats('xxxx', 'yyy');
+    await saveData(
       new Date(),
-      1111,
-      2222,
-      3333
+      stats.numProfileViews,
+      stats.numLastUpdateViews,
+      stats.numSearchAppearances,
     );
+    console.log('Done', stats);
   } catch (e) {
     console.error('Error: ', e);
     throw e;
