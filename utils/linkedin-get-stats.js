@@ -2,19 +2,21 @@ const puppeteer = require('puppeteer');
 
 const sleep = x => new Promise(r => setTimeout(r, x));
 
-module.exports = async function getLinkedinStats(login, password) {
+let browser;
+let page;
+
+module.exports = function getLinkedinStats(login, password) {
   return new Promise(async (resolve, reject) => {
     try {
-      const browser = await puppeteer.launch({
+      browser = await puppeteer.launch({
         // headless: false,
       });
-      const page = await browser.newPage();
+      page = await browser.newPage();
       page.goto('https://www.linkedin.com/login');
 
       page.on('response', async (response) => {
         if (response.url().includes('dashboard')) {
           const { data } = await response.json();
-          browser.close();
           resolve({
             numProfileViews: data.numProfileViews,
             numLastUpdateViews: data.numLastUpdateViews,
@@ -35,5 +37,34 @@ module.exports = async function getLinkedinStats(login, password) {
       console.error('getLinkedinStats.error', e);
       reject(e);
     }
-  });
+  }).then((getLinkedinStatsData) => {
+    const ssiSelector = '.current-pie-grid .highcharts-title tspan';
+    return new Promise(async (resolve, reject) => {
+      try {
+        await page.goto('https://www.linkedin.com/sales/ssi');
+        await page.waitForSelector(ssiSelector);
+        const ssi = await page.$eval(ssiSelector, el => +el.textContent);
+        const industryRank = 100 - await page.$eval('.industry-ssi-rank .rank-change-main-number', el => +el.textContent);
+        const networkRank = 100 - await page.$eval('.network-ssi-rank .rank-change-main-number', el => +el.textContent);
+
+        resolve({
+          ...getLinkedinStatsData,
+          ssi,
+          industryRank,
+          networkRank,
+        });
+      } catch (e) {
+        console.error('getLinkedinStats(ssi).error', e);
+        reject(e);
+      }
+    });
+  })
+    .then((data) => {
+      browser.close();
+      return data;
+    })
+    .catch((error) => {
+      browser.close();
+      throw error;
+    });
 }

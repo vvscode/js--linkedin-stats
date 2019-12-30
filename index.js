@@ -6,11 +6,19 @@ const getStats = require('./utils/linkedin-get-stats');
     const stats = await getStats('xxxx', 'yyy');
     await saveData(
       new Date(),
-      stats.numProfileViews,
-      stats.numLastUpdateViews,
-      stats.numSearchAppearances,
+      {
+        whoviewedyourprofile: stats.numProfileViews,
+        postviews: stats.numLastUpdateViews,
+        searchappearence: stats.numSearchAppearances,
+        ssi: stats.ssi,
+        industryrank: stats.industryRank,
+        networkrank: stats.networkRank
+      }
     );
-    console.log('Done', stats);
+    console.log('Done', {
+      date: new Date(),
+      ...stats
+    });
   } catch (e) {
     console.error('Error: ', e);
     throw e;
