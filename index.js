@@ -1,9 +1,10 @@
 const saveData = require('./utils/safe-to-google-spreadsheet');
 const getStats = require('./utils/linkedin-get-stats');
+const config = require('./config');
 
 (async () => {
   try {
-    const stats = await getStats('xxxx', 'yyy');
+    const stats = await getStats(config.linkedin.login, config.linkedin.password);
     await saveData(
       new Date(),
       {

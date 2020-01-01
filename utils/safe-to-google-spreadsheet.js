@@ -2,13 +2,12 @@ const util = require('util');
 
 const GoogleSpreadsheet = require('google-spreadsheet');
 
-const creds = require('../linkedin-stater-credentials.json');
-const spredSheetId = '***REMOVED***';
+const config = require('../config');
 
 module.exports = async function saveData(date, data) {
-  const doc = new GoogleSpreadsheet(spredSheetId);
+  const doc = new GoogleSpreadsheet(config.spredSheetId);
 
-  await util.promisify(doc.useServiceAccountAuth)(creds);
+  await util.promisify(doc.useServiceAccountAuth)(config.googleAppAuth);
   const info = await util.promisify(doc.getInfo)();
   const sheet = info.worksheets[0];
 
